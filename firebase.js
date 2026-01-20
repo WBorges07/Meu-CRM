@@ -2,8 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// Chave dividida para evitar que tradutores automáticos a reconheçam como palavra
+const parte1 = "AIzaSyAv7cufs";
+const parte2 = "_iYhyeQRhq_XVtOIJQYE12FBvo";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAv7cufs_iYhyeQRhq_XVtOIJQYE12FBvo",
+  apiKey: parte1 + parte2,
   authDomain: "customers-3bc70.firebaseapp.com",
   projectId: "customers-3bc70",
   storageBucket: "customers-3bc70.firebasestorage.app",
