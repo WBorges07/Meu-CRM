@@ -3,7 +3,8 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAv7cufs_iYhyeQRhq_XVtOIJQYE12FBvo",
+  // Esta é a sua nova chave gerada agora
+  apiKey: "AIzaSyAVhQ-6C7jtZrgzibKCJurVciG5L2_zRgs", 
   authDomain: "customers-3bc70.firebaseapp.com",
   projectId: "customers-3bc70",
   storageBucket: "customers-3bc70.firebasestorage.app",
