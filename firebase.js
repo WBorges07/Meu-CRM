@@ -3,7 +3,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-    // COLE AQUI SUAS CHAVES DO FIREBASE
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID", // ESTE É O CAMPO QUE ESTÁ FALTANDO
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "SEU_ID",
+  appId: "SEU_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
