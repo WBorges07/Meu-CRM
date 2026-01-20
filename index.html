@@ -1,54 +1,133 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Profissional</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/imask"></script>
+    <title>Meu CRM - Gestão de Processos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .table-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        body { background-color: #f4f7f6; }
+        .container { margin-top: 30px; }
+        .card { border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .status-negociacao { background-color: #fff3cd; color: #856404; }
+        .status-assinado { background-color: #d4edda; color: #155724; }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-dark bg-primary mb-4">
-        <div class="container d-flex justify-content-between">
-            <span class="navbar-brand h1 mb-0">Meu CRM</span>
-            <button onclick="window.logout()" class="btn btn-outline-light btn-sm">Sair</button>
-        </div>
-    </nav>
+<body class="notranslate">
 
-    <div class="container">
-        <div class="row mb-4 text-center">
-            <div class="col-md-4"><div class="card p-3 bg-info text-white"><h6>Leads</h6><h2 id="contLead">0</h2></div></div>
-            <div class="col-md-4"><div class="card p-3 bg-warning"><h6>Negociando</h6><h2 id="contNegociacao">0</h2></div></div>
-            <div class="col-md-4"><div class="card p-3 bg-success text-white"><h6>Vendas</h6><h2 id="contVenda">0</h2></div></div>
-        </div>
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">CRM Jurídico</span>
+        <button id="btnSair" class="btn btn-outline-light btn-sm">Sair</button>
+    </div>
+</nav>
 
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card p-4">
-                    <h5>Novo Cliente</h5>
-                    <input type="text" id="nomeCliente" class="form-control mb-2" placeholder="Nome">
-                    <input type="text" id="telCliente" class="form-control mb-3" placeholder="Telefone">
-                    <button id="btnSalvar" class="btn btn-primary w-100">Salvar</button>
-                </div>
+<div class="container">
+    <div class="card p-4 mb-4">
+        <h5 class="mb-3">Cadastrar Novo Cliente/Processo</h5>
+        <div class="row g-3">
+            <div class="col-md-3"><input type="text" id="nome" class="form-control" placeholder="Nome Completo"></div>
+            <div class="col-md-2"><input type="text" id="telefone" class="form-control" placeholder="Telefone"></div>
+            <div class="col-md-3"><input type="email" id="email" class="form-control" placeholder="E-mail"></div>
+            <div class="col-md-2">
+                <select id="status" class="form-select">
+                    <option value="Em negociação">Em negociação</option>
+                    <option value="Contrato assinado">Contrato assinado</option>
+                </select>
             </div>
-            <div class="col-md-8">
-                <div class="table-container">
-                    <div class="d-flex gap-2 mb-3">
-                        <input type="text" id="buscaCliente" class="form-control" placeholder="Buscar cliente...">
-                        <button id="btnExportar" class="btn btn-outline-secondary">Exportar Excel</button>
-                    </div>
-                    <table class="table">
-                        <thead><tr><th>Cadastro</th><th>Nome</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody id="tabelaClientes"></tbody>
-                    </table>
-                </div>
+            <div class="col-md-2"><input type="text" id="numProcesso" class="form-control" placeholder="N° do Processo"></div>
+            <div class="col-md-2">
+                <select id="situacao" class="form-select">
+                    <option value="Em andamento">Em andamento</option>
+                    <option value="Causa ganha">Causa ganha</option>
+                    <option value="Causa perdida">Causa perdida</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button id="btnSalvar" class="btn btn-success w-100">Salvar</button>
             </div>
         </div>
     </div>
-    <script type="module" src="app.js"></script>
+
+    <div class="card p-3">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Processo</th>
+                    <th>Situação</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="listaClientes"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { db, auth } from './firebase.js';
+    import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Proteção de Rota: Se não estiver logado, volta para o login
+    onAuthStateChanged(auth, (user) => {
+        if (!user) window.location.href = "login.html";
+    });
+
+    const lista = document.getElementById('listaClientes');
+
+    // Salvar Dados
+    document.getElementById('btnSalvar').addEventListener('click', async () => {
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        try {
+            await addDoc(collection(db, "clientes"), {
+                data: dataAtual,
+                nome: document.getElementById('nome').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                status: document.getElementById('status').value,
+                numProcesso: document.getElementById('numProcesso').value,
+                situacao: document.getElementById('situacao').value,
+                timestamp: Date.now()
+            });
+            alert("Cadastrado com sucesso!");
+        } catch (e) { alert("Erro ao salvar!"); }
+    });
+
+    // Ler Dados em Tempo Real
+    const q = query(collection(db, "clientes"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (snapshot) => {
+        lista.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+            const c = docSnap.data();
+            const badgeStatus = c.status === 'Contrato assinado' ? 'bg-success' : 'bg-warning text-dark';
+            const badgeSituacao = c.situacao === 'Causa ganha' ? 'bg-primary' : (c.situacao === 'Causa perdida' ? 'bg-danger' : 'bg-secondary');
+
+            lista.innerHTML += `
+                <tr>
+                    <td>${c.data}</td>
+                    <td>${c.nome}</td>
+                    <td>${c.telefone}</td>
+                    <td>${c.email}</td>
+                    <td><span class="badge ${badgeStatus}">${c.status}</span></td>
+                    <td>${c.numProcesso}</td>
+                    <td><span class="badge ${badgeSituacao}">${c.situacao}</span></td>
+                    <td><button onclick="window.excluir('${docSnap.id}')" class="btn btn-sm btn-outline-danger">X</button></td>
+                </tr>
+            `;
+        });
+    });
+
+    window.excluir = async (id) => {
+        if(confirm("Deseja excluir?")) await deleteDoc(doc(db, "clientes", id));
+    };
+
+    document.getElementById('btnSair').onclick = () => signOut(auth);
+</script>
 </body>
 </html>
