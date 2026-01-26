@@ -18,27 +18,19 @@
 
         body { background-color: var(--bg-dark); color: #f1f5f9; font-family: 'Inter', sans-serif; padding: 30px; }
         
-        /* BOTÃO DASHBOARD MODERNO */
         .btn-modern-dash {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff; padding: 10px 24px; border-radius: 12px;
-            font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
-            letter-spacing: 1px; text-decoration: none; display: inline-flex;
-            align-items: center; gap: 10px; transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 24px;
+            border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
         }
-        .btn-modern-dash:hover {
-            background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);
-            color: var(--accent-blue); transform: translateY(-2px);
-        }
+        .btn-modern-dash:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); }
 
-        /* ESTILO DA ESTEIRA */
         .esteira-container { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; align-items: flex-start; }
         .coluna-esteira {
             background-color: #020617; border: 1px solid var(--border-color);
-            border-radius: 16px; width: 380px; min-width: 380px;
-            max-height: 80vh; display: flex; flex-direction: column; transition: background-color 0.3s;
+            border-radius: 16px; width: 380px; min-width: 380px; max-height: 80vh;
+            display: flex; flex-direction: column;
         }
         .drag-over { background-color: var(--drop-zone); border-color: var(--accent-blue); }
 
@@ -52,23 +44,18 @@
         .card-processo {
             background-color: var(--card-dark); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 18px; margin-bottom: 15px;
-            cursor: grab; transition: all 0.2s ease; position: relative;
+            cursor: pointer; transition: all 0.2s ease; position: relative;
         }
-        .card-processo:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+        .card-processo:hover { border-color: var(--accent-blue); background: rgba(255,255,255,0.02); }
         
         .btn-excluir-card {
             position: absolute; top: 10px; right: 10px; background: transparent;
-            border: none; color: #475569; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+            border: none; color: #475569; font-size: 1.1rem; cursor: pointer; z-index: 5;
         }
         .btn-excluir-card:hover { color: var(--danger); }
 
-        .card-cliente { font-weight: 700; color: #fff; font-size: 1rem; display: block; margin-bottom: 8px; width: 90%; }
-        
-        /* LINK WHATSAPP */
-        .card-info-link { 
-            font-size: 0.8rem; color: #94a3b8; display: inline-flex; align-items: center; 
-            text-decoration: none; transition: color 0.2s; gap: 5px;
-        }
+        .card-cliente { font-weight: 700; color: #fff; font-size: 1rem; display: block; margin-bottom: 8px; width: 85%; }
+        .card-info-link { font-size: 0.8rem; color: #94a3b8; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .card-info-link:hover { color: var(--whatsapp-green); }
         
         .card-valor-input { 
@@ -76,7 +63,6 @@
             font-weight: 900; font-size: 1rem; width: 100%; margin-top: 12px;
             padding-top: 10px; border-top: 1px solid #1e293b; outline: none;
         }
-        .card-valor-input:focus { background: #020617; border-color: var(--accent-blue); border-radius: 4px; }
 
         .badge-contrato { background: #1e293b; color: var(--accent-blue); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
 
@@ -94,7 +80,7 @@
     <div class="row align-items-center mb-5">
         <div class="col-md-4">
             <h2 class="fw-bold mb-0">📋 Esteira <span style="color: var(--accent-blue)">Elite</span></h2>
-            <p class="text-secondary small mb-0">Gestão visual profissional</p>
+            <p class="text-secondary small mb-0">Gestão visual e detalhada</p>
         </div>
         <div class="col-md-4">
             <div class="search-container">
@@ -103,32 +89,21 @@
             </div>
         </div>
         <div class="col-md-4 text-end">
-            <a href="index.html" class="btn-modern-dash">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                Dashboard
-            </a>
+            <a href="index.html" class="btn-modern-dash">Dashboard</a>
         </div>
     </div>
 
     <div class="esteira-container">
         <div class="coluna-esteira" data-status="Em negociação" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
-            <div class="cabecalho-coluna" style="color: #fbbf24;">
-                <span>⏳ Negociação</span> <span id="count-neg" class="count-badge">0</span>
-            </div>
+            <div class="cabecalho-coluna" style="color: #fbbf24;"><span>⏳ Negociação</span> <span id="count-neg" class="count-badge">0</span></div>
             <div id="lista-negociacao" class="lista-cards"></div>
         </div>
-
         <div class="coluna-esteira" data-status="Em andamento" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
-            <div class="cabecalho-coluna" style="color: #38bdf8;">
-                <span>⚙️ Andamento</span> <span id="count-and" class="count-badge">0</span>
-            </div>
+            <div class="cabecalho-coluna" style="color: #38bdf8;"><span>⚙️ Andamento</span> <span id="count-and" class="count-badge">0</span></div>
             <div id="lista-andamento" class="lista-cards"></div>
         </div>
-
         <div class="coluna-esteira" data-status="Causa ganha" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
-            <div class="cabecalho-coluna" style="color: #10b981;">
-                <span>✅ Ganhos</span> <span id="count-gan" class="count-badge">0</span>
-            </div>
+            <div class="cabecalho-coluna" style="color: #10b981;"><span>✅ Ganhos</span> <span id="count-gan" class="count-badge">0</span></div>
             <div id="lista-ganha" class="lista-cards"></div>
         </div>
     </div>
@@ -142,7 +117,10 @@
 
     window.allowDrop = (ev) => { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); };
     window.dragLeave = (ev) => { ev.currentTarget.classList.remove('drag-over'); };
-    window.drag = (ev) => { ev.dataTransfer.setData("clienteId", ev.target.id); };
+    window.drag = (ev) => { 
+        ev.dataTransfer.setData("clienteId", ev.target.id);
+        ev.target.style.opacity = "0.4";
+    };
 
     window.drop = async (ev) => {
         ev.preventDefault();
@@ -178,36 +156,31 @@
             const c = docSnap.data();
             const id = docSnap.id;
             const status = c.situacao || 'Em negociação';
-            
-            // Limpa o número para o link do WhatsApp
             const foneLimpo = c.contato ? c.contato.replace(/\D/g, '') : '';
 
             if (divs[status]) {
                 counts[status]++;
                 divs[status].innerHTML += `
-                    <div class="card-processo" id="${id}" draggable="true" ondragstart="drag(event)">
-                        <button class="btn-excluir-card" onclick="window.excluirCard('${id}')">✕</button>
+                    <div class="card-processo" id="${id}" draggable="true" ondragstart="drag(event)" 
+                         onclick="if(event.target.tagName !== 'INPUT' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'A') window.location.href='detalhes.html?id=${id}'">
+                        <button class="btn-excluir-card" onclick="event.stopPropagation(); window.excluirCard('${id}')">✕</button>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="badge-contrato">#${c.numContrato}</span>
                             <span style="font-size: 0.7rem; color: #475569;">${c.data}</span>
                         </div>
                         <span class="card-cliente">${c.nome}</span>
-                        
-                        <a href="https://wa.me/55${foneLimpo}" target="_blank" class="card-info-link" title="Chamar no WhatsApp">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.539 2.016 2.041-.54c.947.517 1.997.822 3.045.822 3.181 0 5.767-2.586 5.767-5.766 0-3.18-2.586-5.765-5.765-5.765zm3.384 8.192c-.144.405-.833.778-1.156.824-.285.041-.65.074-1.046-.055-.245-.081-.564-.191-.954-.355-1.659-.693-2.723-2.373-2.806-2.484-.084-.111-.682-.906-.682-1.724 0-.819.423-1.222.574-1.391.151-.17.33-.213.439-.213s.22.002.314.008c.101.005.234-.038.366.281.132.319.454 1.104.494 1.187.04.083.066.18.01.294-.056.114-.085.185-.169.284-.084.099-.177.221-.252.296-.083.084-.169.174-.073.341.096.167.426.703.914 1.139.629.56 1.158.734 1.325.818.167.084.264.07.363-.044.1-.114.423-.491.536-.659.113-.167.226-.141.381-.084.154.056.98.463 1.149.548.17.084.283.127.324.197.041.07.041.405-.103.81z"/></svg>
-                            ${c.contato}
+                        <a href="https://wa.me/55${foneLimpo}" target="_blank" class="card-info-link" onclick="event.stopPropagation()">
+                             📞 ${c.contato}
                         </a>
-
                         <input type="text" class="card-valor-input" value="${formatarMoeda(c.valorCausa)}" 
                             onblur="window.editarValorCard('${id}', this.value)"
-                            draggable="false">
+                            onclick="event.stopPropagation()" draggable="false">
                     </div>`;
             }
         });
         document.getElementById('count-neg').innerText = counts['Em negociação'];
         document.getElementById('count-and').innerText = counts['Em andamento'];
         document.getElementById('count-gan').innerText = counts['Causa ganha'];
-        filtrarCards();
     });
 </script>
 </body>
