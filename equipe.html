@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="notranslate" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Elite - Gestão de Equipe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020617; --card-dark: #0f172a; --accent-blue: #38bdf8;
+            --accent-glow: #0ea5e9; --text-main: #f1f5f9; --border-color: #1e293b; --input-bg: #020617;
+        }
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        .navbar { background-color: var(--card-dark) !important; border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+        
+        .btn-modern-action {
+            background: var(--card-dark); border: 1px solid var(--border-color);
+            color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.8rem;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
+        }
+        .btn-modern-action:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(56, 189, 248, 0.05); }
+
+        .form-section { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); padding: 2rem; margin-bottom: 2rem; }
+        .custom-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
+        .form-control { background-color: var(--input-bg); border: 1px solid var(--border-color); color: white; border-radius: 10px; height: 40px; font-size: 0.9rem; }
+        
+        .btn-cadastrar {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            border: none; color: white; font-weight: 800; height: 45px; border-radius: 10px; cursor: pointer;
+        }
+
+        .vendedor-stats { 
+            display: none; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 10px; margin-top: 1rem; padding: 1.5rem; background: rgba(56, 189, 248, 0.05);
+            border-radius: 12px; border: 1px dashed var(--accent-blue);
+        }
+        .v-stat { text-align: center; }
+        .v-value { font-size: 1.2rem; font-weight: 800; color: var(--accent-blue); display: block; }
+        .v-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; }
+
+        #containerClientesVendedor { display: none; margin-top: 1.5rem; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .table-container { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 2rem; }
+        
+        /* Centralização da Tabela */
+        .table { width: 100%; color: var(--text-main); font-size: 0.85rem; text-align: center; vertical-align: middle; }
+        .table th { text-align: center; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; color: #64748b; padding: 15px 10px; }
+        
+        /* Ajuste para não centralizar demais a primeira coluna (estética) */
+        .table th:first-child, .table td:first-child { text-align: left; padding-left: 2rem; }
+
+        .btn-view { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+        
+        .badge-status { padding: 4px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .bg-venda { background: #15803d; color: #bbf7d0; }
+        .bg-negoc { background: #1e3a8a; color: #bfdbfe; }
+
+        .filter-row { background: #1e293b; padding: 15px; border-radius: 10px; display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+    <div class="container-fluid px-5">
+        <span class="navbar-brand fw-bold">👥 GESTÃO DE <span style="color: var(--accent-blue)">EQUIPE</span></span>
+        <a href="index.html" class="btn-modern-action">🏠 Voltar ao Dashboard</a>
+    </div>
+</nav>
+
+<div class="container-fluid px-5">
+    
+    <div class="form-section">
+        <h6 class="mb-3 fw-bold" style="color: var(--accent-blue)">+ NOVO VENDEDOR</h6>
+        <div class="row g-3">
+            <div class="col-md-5 d-flex flex-column">
+                <label class="custom-label">Nome Completo</label>
+                <input type="text" id="nomeVendedor" class="form-control" placeholder="Digite o nome do vendedor">
+            </div>
+            <div class="col-md-4 d-flex flex-column">
+                <label class="custom-label">E-mail Corporativo</label>
+                <input type="email" id="emailVendedor" class="form-control" placeholder="vendedor@elite.com">
+            </div>
+            <div class="col-md-3 d-flex flex-column">
+                <label class="custom-label">&nbsp;</label>
+                <button id="btnSalvarVendedor" class="btn btn-cadastrar w-100">CADASTRAR VENDEDOR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="painelVendedor" class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 id="vendedorNomeDestaque" class="fw-bold mb-0" style="display:none">Performance de <span class="text-info">---</span></h5>
+        </div>
+
+        <div id="areaFiltros" style="display:none">
+            <div class="filter-row">
+                <div class="flex-grow-1">
+                    <label class="custom-label">Data Início</label>
+                    <input type="date" id="dataInicio" class="form-control">
+                </div>
+                <div class="flex-grow-1">
+                    <label class="custom-label">Data Fim</label>
+                    <input type="date" id="dataFim" class="form-control">
+                </div>
+                <button id="btnFiltrar" class="btn btn-info btn-sm fw-bold px-4" style="height:40px; border-radius:10px">FILTRAR PERÍODO</button>
+            </div>
+        </div>
+        
+        <div id="statsGrid" class="vendedor-stats">
+            <div class="v-stat"><span class="v-value" id="vLead">0</span><span class="v-label">Leads</span></div>
+            <div class="v-stat"><span class="v-value" id="vNegoc">0</span><span class="v-label">Em Negoc.</span></div>
+            <div class="v-stat"><span class="v-value text-success" id="vVenda">0</span><span class="v-label">Vendas</span></div>
+            <div class="v-stat"><span class="v-value text-danger" id="vDeclin">0</span><span class="v-label">Perdidos</span></div>
+            <div class="v-stat"><span class="v-value text-info" id="vValorVendido">R$ 0,00</span><span class="v-label">Valor Vendido</span></div>
+        </div>
+
+        <div id="containerClientesVendedor">
+            <p class="custom-label mt-4 mb-2">Clientes no Período</p>
+            <div class="table-container">
+                <table class="table table-dark mb-0">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th>Telefone</th>
+                            <th>Bem</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaClientesDoVendedor"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <hr style="border-color: var(--border-color); margin: 3rem 0;">
+
+    <h6 class="custom-label mb-3">Vendedores Ativos</h6>
+    <div class="table-container">
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Admissão</th>
+                    <th>Nome do Vendedor</th>
+                    <th>E-mail</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="listaVendedores"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { db } from './firebase.js';
+    import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let vendedorSelecionadoAtualmente = "";
+    const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+    document.getElementById('btnSalvarVendedor').onclick = async () => {
+        const nome = document.getElementById('nomeVendedor').value;
+        const email = document.getElementById('emailVendedor').value;
+        if(!nome || !email) return alert("Preencha tudo!");
+        await addDoc(collection(db, "vendedores"), {
+            nome, email, dataCadastro: new Date().toLocaleDateString('pt-BR'), ativo: true, timestamp: Date.now()
+        });
+        document.getElementById('nomeVendedor').value = ""; document.getElementById('emailVendedor').value = "";
+    };
+
+    onSnapshot(query(collection(db, "vendedores"), orderBy("timestamp", "desc")), (snapshot) => {
+        const lista = document.getElementById('listaVendedores');
+        lista.innerHTML = "";
+        snapshot.forEach(docSnap => {
+            const v = docSnap.data();
+            lista.innerHTML += `
+                <tr>
+                    <td class="text-secondary">${v.dataCadastro}</td>
+                    <td class="fw-bold text-white">${v.nome}</td>
+                    <td>${v.email}</td>
+                    <td>
+                        <button onclick="verPerformance('${v.nome}')" class="btn-view">Ver Performance & Clientes</button>
+                        <button onclick="excluirVendedor('${docSnap.id}')" class="btn btn-sm text-danger ms-2">✕</button>
+                    </td>
+                </tr>`;
+        });
+    });
+
+    window.verPerformance = async (nomeVendedor) => {
+        vendedorSelecionadoAtualmente = nomeVendedor;
+        document.getElementById('vendedorNomeDestaque').style.display = "block";
+        document.getElementById('vendedorNomeDestaque').querySelector('span').innerText = nomeVendedor;
+        document.getElementById('areaFiltros').style.display = "block";
+        document.getElementById('statsGrid').style.display = "grid";
+        document.getElementById('containerClientesVendedor').style.display = "block";
+        
+        await filtrarDados();
+        document.getElementById('painelVendedor').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    async function filtrarDados() {
+        const dInicio = document.getElementById('dataInicio').value; 
+        const dFim = document.getElementById('dataFim').value;
+
+        const q = query(collection(db, "clientes"), where("vendedor", "==", vendedorSelecionadoAtualmente));
+        const querySnapshot = await getDocs(q);
+        
+        let stats = { leads: 0, negoc: 0, vendas: 0, declin: 0, valorVendido: 0 };
+        const listaClientesHTML = document.getElementById('listaClientesDoVendedor');
+        listaClientesHTML.innerHTML = "";
+
+        querySnapshot.forEach((doc) => {
+            const c = doc.data();
+            
+            if(dInicio || dFim) {
+                const dataCliente = new Date(c.timestamp);
+                if(dInicio && dataCliente < new Date(dInicio)) return;
+                if(dFim) {
+                    let limiteFim = new Date(dFim);
+                    limiteFim.setDate(limiteFim.getDate() + 1); 
+                    if(dataCliente > limiteFim) return;
+                }
+            }
+
+            stats.leads++;
+            if(c.situacao === "Em negociação") stats.negoc++;
+            if(c.situacao === "Venda") {
+                stats.vendas++;
+                stats.valorVendido += parseFloat(c.valorDoBem || 0);
+            }
+            if(c.situacao === "Declinado") stats.declin++;
+
+            listaClientesHTML.innerHTML += `
+                <tr>
+                    <td class="small text-secondary">${c.data}</td>
+                    <td class="fw-bold">${c.nome}</td>
+                    <td class="text-info">${c.telefone}</td>
+                    <td>${c.bemDesejado}</td>
+                    <td>${formatarMoeda(c.valorDoBem)}</td>
+                    <td><span class="badge-status ${c.situacao === 'Venda' ? 'bg-venda' : 'bg-negoc'}">${c.situacao}</span></td>
+                </tr>`;
+        });
+
+        document.getElementById('vLead').innerText = stats.leads;
+        document.getElementById('vNegoc').innerText = stats.negoc;
+        document.getElementById('vVenda').innerText = stats.vendas;
+        document.getElementById('vDeclin').innerText = stats.declin;
+        document.getElementById('vValorVendido').innerText = formatarMoeda(stats.valorVendido);
+    }
+
+    document.getElementById('btnFiltrar').onclick = () => filtrarDados();
+
+    window.excluirVendedor = async (id) => {
+        if(confirm("Remover vendedor da equipe?")) await deleteDoc(doc(db, "vendedores", id));
+    };
+</script>
+</body>
+</html>

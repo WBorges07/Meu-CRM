@@ -4,83 +4,75 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Jurídico Pro - Gestão Elite</title>
+    <title>CRM Elite - Gestão de Vendas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
     <style>
         :root {
-            --bg-dark: #020617;
-            --card-dark: #0f172a;
-            --accent-blue: #38bdf8;
-            --accent-glow: #0ea5e9;
-            --text-main: #f1f5f9;
-            --border-color: #1e293b;
-            --input-bg: #020617;
+            --bg-dark: #020617; --card-dark: #0f172a; --accent-blue: #38bdf8;
+            --accent-glow: #0ea5e9; --text-main: #f1f5f9; --border-color: #1e293b; --input-bg: #020617;
         }
-
         body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
         .navbar { background-color: var(--card-dark) !important; border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
         
-        .dashboard-row { display: flex; gap: 1.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
+        .dashboard-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; margin-bottom: 2rem; }
         .stat-card { 
             background: linear-gradient(145deg, #1e293b, #0f172a); 
-            border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem 1.5rem; 
-            text-align: center; flex: 1; min-width: 220px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; 
+            text-align: center;
         }
-        .stat-card:hover { transform: translateY(-8px); border-color: var(--accent-blue); box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.2); }
-        .stat-value { font-size: 1.8rem; font-weight: 900; background: linear-gradient(to right, #fff, var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; display: block; }
-        .stat-label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--accent-blue); display: block; }
+        .stat-label { font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .alert-panel { 
+            background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); 
+            border-radius: 16px; padding: 20px; margin-bottom: 2rem; display: none;
+        }
+        .alert-item { 
+            background: #1e1b4b; border-left: 4px solid #ef4444; 
+            padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .reuniao-hoje { 
+            background: rgba(56, 189, 248, 0.15) !important; 
+            box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.2);
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-left: 4px solid var(--accent-blue); }
+            50% { border-left: 4px solid transparent; }
+            100% { border-left: 4px solid var(--accent-blue); }
+        }
+
+        .actions-menu-row {
+            display: flex; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap;
+        }
+        .btn-modern-action {
+            background: var(--card-dark); border: 1px solid var(--border-color);
+            color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.8rem;
+            text-decoration: none; display: flex; align-items: center; gap: 10px; transition: 0.3s; cursor: pointer;
+        }
+        .btn-modern-action:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(56, 189, 248, 0.05); }
+        .btn-active-filter { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
 
         .form-section { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); padding: 2rem; margin-bottom: 2rem; }
         .custom-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
-        .form-control, .form-select { background-color: var(--input-bg); border: 1px solid var(--border-color); color: white; border-radius: 10px; height: 42px; font-size: 0.9rem; }
+        .form-control, .form-select { background-color: var(--input-bg); border: 1px solid var(--border-color); color: white; border-radius: 10px; height: 45px; }
+        .form-control:focus, .form-select:focus { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); background-color: var(--input-bg); color: white; }
 
-        .btn-salvar-pro {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow));
-            color: #020617; border: none; border-radius: 10px;
-            padding: 0 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-            transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-            height: 42px; width: auto; display: inline-flex; align-items: center; justify-content: center;
+        .btn-cadastrar {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            border: none; color: white; font-weight: 800; letter-spacing: 1px;
+            height: 45px; border-radius: 10px; text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); transition: all 0.3s ease;
         }
-        .btn-salvar-pro:hover { transform: translateY(-1px); filter: brightness(1.1); }
-
-        .actions-wrapper { display: flex; gap: 12px; justify-content: flex-end; }
-        .btn-modern-action {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff; padding: 0 20px; border-radius: 12px;
-            font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
-            text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
-            gap: 8px; transition: all 0.3s ease; height: 45px; width: auto; min-width: 140px;
-        }
-        .btn-modern-action:hover {
-            background: rgba(255, 255, 255, 0.08); border-color: var(--accent-blue);
-            color: var(--accent-blue); transform: translateY(-2px);
-        }
-        .btn-excel-modern { border-color: rgba(16, 185, 129, 0.3); }
-        .btn-excel-modern:hover { border-color: #10b981; color: #10b981; }
+        .btn-cadastrar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4); opacity: 0.9; color: white; }
 
         .table-container { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; }
         .table { width: 100%; color: var(--text-main); font-size: 0.85rem; }
-        .table thead th { background-color: #020617; color: #94a3b8; padding: 1.2rem 1rem; font-size: 0.7rem; text-transform: uppercase; }
-        
-        .select-status {
-            appearance: none; background-color: #020617; border: 1px solid var(--border-color);
-            border-radius: 50px; padding: 5px 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; text-align: center;
-        }
-        .status-yellow { color: #fbbf24; } .status-blue { color: #38bdf8; } .status-green { color: #10b981; }
-
-        .input-inline-tabela { background: transparent; border: 1px solid transparent; color: white; width: 100%; padding: 2px 5px; }
-        .input-inline-tabela:focus { background: #020617; border-color: var(--accent-blue); outline: none; border-radius: 4px; }
-        
-        .input-busca { padding-left: 45px !important; background-color: #0f172a !important; border: 1px solid var(--border-color); color: white; border-radius: 12px; height: 45px; }
-        .search-wrapper { position: relative; }
-        .search-icon { position: absolute; left: 18px; top: 12px; color: var(--accent-blue); }
+        .select-status { appearance: none; background: #020617; border: 1px solid var(--border-color); border-radius: 50px; padding: 5px 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; color: var(--accent-blue); }
     </style>
 </head>
 <body>
@@ -94,61 +86,62 @@
 
 <div class="container-fluid px-5">
     <div class="dashboard-row">
-        <div class="stat-card"><span class="stat-value" id="valTotal">R$ 0,00</span><span class="stat-label">Carteira Total</span></div>
-        <div class="stat-card"><span class="stat-value" id="valGanhos" style="background: linear-gradient(to right, #fff, #10b981); -webkit-background-clip: text;">R$ 0,00</span><span class="stat-label">Causas Ganhas</span></div>
-        <div class="stat-card"><span class="stat-value" id="valAndamento">R$ 0,00</span><span class="stat-label">Em Andamento</span></div>
-        <div class="stat-card"><span class="stat-value" id="valNegociacao" style="background: linear-gradient(to right, #fff, #fbbf24); -webkit-background-clip: text;">R$ 0,00</span><span class="stat-label">Em Negociação</span></div>
+        <div class="stat-card"><span class="stat-value" id="countLeadNovo">0</span><span class="stat-label">Lead Novo</span></div>
+        <div class="stat-card"><span class="stat-value" id="countPrimeiroContato">0</span><span class="stat-label">1º Contato</span></div>
+        <div class="stat-card"><span class="stat-value" id="countNegociacao">0</span><span class="stat-label">Negociação</span></div>
+        <div class="stat-card"><span class="stat-value" id="countReuniaoAgendada">0</span><span class="stat-label">Reunião</span></div>
+        <div class="stat-card"><span class="stat-value" id="countClienteFuturo" style="color: #fbbf24;">0</span><span class="stat-label">Cli. Futuro</span></div>
+        <div class="stat-card"><span class="stat-value" id="countDocs">0</span><span class="stat-label">Doc.</span></div>
+        <div class="stat-card"><span class="stat-value" id="countPagamento">0</span><span class="stat-label">Pagamento</span></div>
+        <div class="stat-card"><span class="stat-value text-success" id="countVenda">0</span><span class="stat-label">Venda</span></div>
+        <div class="stat-card"><span class="stat-value text-danger" id="countDeclinado">0</span><span class="stat-label">Declinado</span></div>
+        <div class="stat-card"><span class="stat-value" id="countRepescagem" style="color: #a855f7;">0</span><span class="stat-label">Repescagem</span></div>
+    </div>
+
+    <div id="painelAlertas" class="alert-panel">
+        <h6 class="text-danger fw-bold mb-3">⚠️ ATENÇÃO: PRAZOS PARA HOJE</h6>
+        <div id="listaAlertas"></div>
+    </div>
+
+    <div class="actions-menu-row">
+        <a href="agenda.html" class="btn-modern-action">📅 Agenda</a>
+        <button id="btnFiltroReuniao" class="btn-modern-action">📅 Ver Reuniões de Hoje</button>
+        <button id="btnExportar" class="btn-modern-action">📤 Exportar Relatório</button>
+        <a href="esteira.html" class="btn-modern-action">📊 Ver Esteira de Vendas</a>
+        <a href="equipe.html" class="btn-modern-action" style="border-color: var(--accent-glow)">👥 Gestão de Equipe</a>
     </div>
 
     <div class="form-section">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-1"><label class="custom-label">Contrato</label><input type="text" id="numContrato" class="form-control"></div>
-            <div class="col-md-3"><label class="custom-label">Nome Cliente</label><input type="text" id="nome" class="form-control"></div>
-            <div class="col-md-2"><label class="custom-label">Contato</label><input type="text" id="contato" class="form-control"></div>
-            <div class="col-md-2"><label class="custom-label">E-mail</label><input type="email" id="email" class="form-control"></div>
-            <div class="col-md-2"><label class="custom-label">Valor (R$)</label><input type="text" id="valorCausa" class="form-control" placeholder="R$ 0,00"></div>
-            <div class="col-md-1">
-                <label class="custom-label">Status</label>
-                <select id="situacao" class="form-select">
-                    <option value="Em negociação">Negociação</option>
-                    <option value="Em andamento">Andamento</option>
-                    <option value="Causa ganha">Ganha</option>
+        <div class="row g-3">
+            <div class="col-md-2 d-flex flex-column"><label class="custom-label">Nome</label><input type="text" id="nome" class="form-control" placeholder="Nome do Lead"></div>
+            <div class="col-md-2 d-flex flex-column"><label class="custom-label">Telefone</label><input type="text" id="telefone" class="form-control" placeholder="99 99999-9999"></div>
+            <div class="col-md-2 d-flex flex-column"><label class="custom-label">E-mail</label><input type="email" id="email" class="form-control" placeholder="exemplo@email.com"></div>
+            <div class="col-md-2 d-flex flex-column">
+                <label class="custom-label">Vendedor Responsável</label>
+                <select id="vendedor" class="form-select">
+                    <option value="">Selecione...</option>
                 </select>
             </div>
-            <div class="col-md-1 text-end"><button id="btnSalvar" class="btn-salvar-pro">SALVAR</button></div>
+            <div class="col-md-2 d-flex flex-column">
+                <label class="custom-label">Bem desejado</label>
+                <select id="bemDesejado" class="form-select">
+                    <option value="Imóvel">Imóvel</option><option value="Auto">Auto</option><option value="Moto">Moto</option><option value="Pesados">Pesados</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex flex-column"><label class="custom-label">Valor</label><input type="text" id="valorDoBem" class="form-control" placeholder="R$ 0,00"></div>
+            <div class="col-md-1 d-flex flex-column"><label class="custom-label">&nbsp;</label> <button id="btnSalvar" class="btn btn-cadastrar w-100">OK</button></div>
         </div>
     </div>
 
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-5">
-            <div class="search-wrapper">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="inputBusca" class="form-control input-busca" placeholder="Pesquisar por nome ou contrato...">
-            </div>
-        </div>
-        <div class="col-md-7">
-            <div class="actions-wrapper">
-                <a href="agenda.html" class="btn-modern-action">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Agenda
-                </a>
-                <button id="btnExportar" class="btn-modern-action btn-excel-modern">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg>
-                    Exportar
-                </button>
-                <a href="esteira.html" class="btn-modern-action">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-                    Ver Esteira
-                </a>
-            </div>
-        </div>
+    <div class="mb-4">
+        <input type="text" id="inputBusca" class="form-control" style="background:#0f172a" placeholder="🔍 Buscar por nome, telefone ou vendedor...">
     </div>
 
     <div class="table-container">
-        <table class="table table-dark table-hover align-middle mb-0">
+        <table class="table table-dark table-hover mb-0">
             <thead>
                 <tr>
-                    <th class="ps-4">Data</th><th>Contrato</th><th>Cliente</th><th>Contato</th><th>E-mail</th><th>Valor</th><th>Situação</th><th class="text-center">Ação</th>
+                    <th class="ps-4">Data</th><th>Nome</th><th>Telefone</th><th>Vendedor</th><th>Bem</th><th>Valor</th><th>Status Funil</th><th class="text-center">Ação</th>
                 </tr>
             </thead>
             <tbody id="listaClientes"></tbody>
@@ -163,34 +156,54 @@
 
     onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
 
-    const maskValor = IMask(document.getElementById('valorCausa'), {
+    const maskTelefone = IMask(document.getElementById('telefone'), { mask: '00 00000-0000' });
+    const maskValor = IMask(document.getElementById('valorDoBem'), {
         mask: 'R$ num',
         blocks: { num: { mask: Number, thousandsSeparator: '.', padFractionalZeros: true, radix: ',', mapToRadix: ['.'] } }
     });
-    IMask(document.getElementById('contato'), { mask: '(00) 00000-0000' });
 
     const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
+    let filtroReuniaoAtivo = false;
+
+    onSnapshot(collection(db, "vendedores"), (snapshot) => {
+        const select = document.getElementById('vendedor');
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Selecione...</option>';
+        snapshot.forEach(doc => {
+            const v = doc.data();
+            if(v.ativo !== false) select.innerHTML += `<option value="${v.nome}">${v.nome}</option>`;
+        });
+        select.value = valorAtual;
+    });
+
     document.getElementById('btnSalvar').onclick = async () => {
         const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Nome obrigatório");
+        const tel = maskTelefone.unmaskedValue;
+        const vend = document.getElementById('vendedor').value;
+        if(!nome || tel.length < 11 || !vend) return alert("Preencha Nome, Telefone e Vendedor");
+
         await addDoc(collection(db, "clientes"), {
             data: new Date().toLocaleDateString('pt-BR'),
-            numContrato: document.getElementById('numContrato').value || '---',
-            nome, contato: document.getElementById('contato').value || '---',
+            nome,
+            telefone: maskTelefone.value,
             email: document.getElementById('email').value || '---',
-            valorCausa: maskValor.unmaskedValue ? parseFloat(maskValor.unmaskedValue) : 0,
-            situacao: document.getElementById('situacao').value,
-            timestamp: Date.now()
+            vendedor: vend,
+            bemDesejado: document.getElementById('bemDesejado').value,
+            valorDoBem: maskValor.unmaskedValue ? parseFloat(maskValor.unmaskedValue) : 0,
+            situacao: "Lead novo",
+            timestamp: Date.now(),
+            proximoPrazo: ""
         });
-        ['numContrato', 'nome', 'contato', 'email', 'valorCausa'].forEach(id => document.getElementById(id).value = '');
+        
+        document.getElementById('nome').value = '';
+        maskTelefone.value = '';
+        document.getElementById('email').value = '';
         maskValor.value = '';
     };
 
     window.atualizarDado = async (id, campo, valor) => {
-        let vFinal = valor;
-        if(campo === 'valorCausa') vFinal = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-        await updateDoc(doc(db, "clientes", id), { [campo]: vFinal });
+        await updateDoc(doc(db, "clientes", id), { [campo]: valor });
     };
 
     let todosOsDados = [];
@@ -202,48 +215,110 @@
     function renderizar() {
         const termo = document.getElementById('inputBusca').value.toLowerCase();
         const lista = document.getElementById('listaClientes');
-        lista.innerHTML = "";
-        let vTotal = 0, vGanhos = 0, vAndamento = 0, vNegociacao = 0;
+        const listaAlertas = document.getElementById('listaAlertas');
+        const painelAlertas = document.getElementById('painelAlertas');
+        
+        lista.innerHTML = ""; listaAlertas.innerHTML = "";
+        
+        // Contadores atualizados
+        let contadores = { 
+            "Lead novo": 0, "Primeiro contato": 0, "Em negociação": 0, 
+            "Reunião agendada": 0, "Cliente Futuro": 0, "Aguardando documentação": 0, 
+            "Aguardando pagamento": 0, "Venda": 0, "Declinado": 0, "Repescagem": 0 
+        };
 
-        todosOsDados.filter(c => c.nome.toLowerCase().includes(termo) || (c.numContrato && c.numContrato.includes(termo))).forEach((c) => {
-            const valor = c.valorCausa || 0;
-            vTotal += valor;
-            if (c.situacao === 'Causa ganha') vGanhos += valor;
-            else if (c.situacao === 'Em andamento') vAndamento += valor;
-            else if (c.situacao === 'Em negociação') vNegociacao += valor;
-            const statusClass = c.situacao === 'Causa ganha' ? 'status-green' : c.situacao === 'Em negociação' ? 'status-yellow' : 'status-blue';
+        const hoje = new Date().toISOString().split('T')[0];
+        let alertasCount = 0;
 
-            lista.innerHTML += `
-                <tr>
-                    <td class="ps-4 small text-secondary">${c.data}</td>
-                    <td class="fw-bold text-info">${c.numContrato}</td>
-                    <td>${c.nome}</td>
-                    <td>${c.contato}</td>
-                    <td class="small text-secondary">${c.email}</td>
-                    <td class="fw-bold"><input type="text" class="input-inline-tabela" value="${formatarMoeda(valor)}" onblur="window.atualizarDado('${c.id}', 'valorCausa', this.value)"></td>
-                    <td>
-                        <select class="select-status ${statusClass}" onchange="window.atualizarDado('${c.id}', 'situacao', this.value)">
-                            <option value="Em negociação" ${c.situacao === 'Em negociação' ? 'selected' : ''}>NEGOCIAÇÃO</option>
-                            <option value="Em andamento" ${c.situacao === 'Em andamento' ? 'selected' : ''}>ANDAMENTO</option>
-                            <option value="Causa ganha" ${c.situacao === 'Causa ganha' ? 'selected' : ''}>GANHA</option>
-                        </select>
-                    </td>
-                    <td class="text-center"><button onclick="window.excluir('${c.id}')" class="btn btn-sm text-danger">✕</button></td>
-                </tr>`;
+        todosOsDados.forEach((c) => {
+            if (contadores.hasOwnProperty(c.situacao)) contadores[c.situacao]++;
+            
+            const isPrazoHoje = c.proximoPrazo === hoje;
+            const isReuniaoHoje = c.situacao === "Reunião agendada" && isPrazoHoje;
+
+            if(isPrazoHoje) {
+                alertasCount++;
+                const prefixo = isReuniaoHoje ? "📅 REUNIÃO AGENDADA: " : "";
+                listaAlertas.innerHTML += `<div class="alert-item" style="${isReuniaoHoje ? 'border-left-color: var(--accent-blue); background: #0c4a6e;' : ''}"><span><strong>${prefixo}${c.nome}</strong> - Follow-up hoje!</span><a href="detalhes.html?id=${c.id}" class="btn btn-sm btn-light fw-bold">Ver</a></div>`;
+            }
+
+            let mostrar = true;
+            if (filtroReuniaoAtivo) {
+                mostrar = isReuniaoHoje;
+            } else {
+                mostrar = (c.nome.toLowerCase().includes(termo) || c.telefone.includes(termo) || (c.vendedor && c.vendedor.toLowerCase().includes(termo)));
+            }
+
+            if (mostrar) {
+                lista.innerHTML += `
+                    <tr class="${isReuniaoHoje ? 'reuniao-hoje' : ''}">
+                        <td class="ps-4 small text-secondary">${c.data}</td>
+                        <td class="fw-bold">${c.nome} ${isReuniaoHoje ? '📅' : ''}</td>
+                        <td class="text-info fw-bold">${c.telefone}</td>
+                        <td class="small">${c.vendedor || 'Não inf.'}</td>
+                        <td><span class="badge bg-secondary" style="font-size: 0.65rem;">${c.bemDesejado}</span></td>
+                        <td class="fw-bold">${formatarMoeda(c.valorDoBem)}</td>
+                        <td>
+                            <select class="select-status" onchange="window.atualizarDado('${c.id}', 'situacao', this.value)">
+                                <option value="Lead novo" ${c.situacao === 'Lead novo' ? 'selected' : ''}>Lead novo</option>
+                                <option value="Primeiro contato" ${c.situacao === 'Primeiro contato' ? 'selected' : ''}>1º Contato</option>
+                                <option value="Em negociação" ${c.situacao === 'Em negociação' ? 'selected' : ''}>Negociação</option>
+                                <option value="Reunião agendada" ${c.situacao === 'Reunião agendada' ? 'selected' : ''}>Reunião agendada</option>
+                                <option value="Cliente Futuro" ${c.situacao === 'Cliente Futuro' ? 'selected' : ''}>Cliente Futuro</option>
+                                <option value="Aguardando documentação" ${c.situacao === 'Aguardando documentação' ? 'selected' : ''}>Documentação</option>
+                                <option value="Aguardando pagamento" ${c.situacao === 'Aguardando pagamento' ? 'selected' : ''}>Pagamento</option>
+                                <option value="Venda" ${c.situacao === 'Venda' ? 'selected' : ''}>Venda</option>
+                                <option value="Declinado" ${c.situacao === 'Declinado' ? 'selected' : ''}>Declinado</option>
+                                <option value="Repescagem" ${c.situacao === 'Repescagem' ? 'selected' : ''}>Repescagem</option>
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            <a href="detalhes.html?id=${c.id}" class="btn btn-sm text-info me-2">👁️</a>
+                            <button onclick="window.excluir('${c.id}')" class="btn btn-sm text-danger">✕</button>
+                        </td>
+                    </tr>`;
+            }
         });
-        document.getElementById('valTotal').innerText = formatarMoeda(vTotal);
-        document.getElementById('valGanhos').innerText = formatarMoeda(vGanhos);
-        document.getElementById('valAndamento').innerText = formatarMoeda(vAndamento);
-        document.getElementById('valNegociacao').innerText = formatarMoeda(vNegociacao);
+
+        // Mapeamento dos IDs do Dashboard atualizado
+        const idMap = { 
+            "Lead novo": "countLeadNovo", 
+            "Primeiro contato": "countPrimeiroContato", 
+            "Em negociação": "countNegociacao", 
+            "Reunião agendada": "countReuniaoAgendada", 
+            "Cliente Futuro": "countClienteFuturo",
+            "Aguardando documentação": "countDocs", 
+            "Aguardando pagamento": "countPagamento", 
+            "Venda": "countVenda", 
+            "Declinado": "countDeclinado",
+            "Repescagem": "countRepescagem"
+        };
+        
+        Object.keys(contadores).forEach(key => { if(document.getElementById(idMap[key])) document.getElementById(idMap[key]).innerText = contadores[key]; });
+        painelAlertas.style.display = alertasCount > 0 ? "block" : "none";
     }
 
-    document.getElementById('btnExportar').onclick = () => {
-        const ws = XLSX.utils.json_to_sheet(todosOsDados.map(c => ({ "Data": c.data, "Cliente": c.nome, "Valor": c.valorCausa, "Status": c.situacao })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "CRM");
-        XLSX.writeFile(wb, "Relatorio_CRM.xlsx");
+    document.getElementById('btnFiltroReuniao').onclick = function() {
+        filtroReuniaoAtivo = !filtroReuniaoAtivo;
+        this.classList.toggle('btn-active-filter');
+        this.innerText = filtroReuniaoAtivo ? "🔍 Mostrar Todos" : "📅 Ver Reuniões de Hoje";
+        renderizar();
     };
 
-    window.excluir = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "clientes", id)); };
+    document.getElementById('inputBusca').oninput = () => {
+        filtroReuniaoAtivo = false;
+        document.getElementById('btnFiltroReuniao').classList.remove('btn-active-filter');
+        document.getElementById('btnFiltroReuniao').innerText = "📅 Ver Reuniões de Hoje";
+        renderizar();
+    };
+
+    document.getElementById('btnExportar').onclick = () => {
+        const ws = XLSX.utils.json_to_sheet(todosOsDados.map(c => ({ "Data": c.data, "Nome": c.nome, "Telefone": c.telefone, "Vendedor": c.vendedor, "Email": c.email, "Bem": c.bemDesejado, "Valor": c.valorDoBem, "Status": c.situacao })));
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Leads_Elite");
+        XLSX.writeFile(wb, "CRM_Vendas_Elite.xlsx");
+    };
+
+    window.excluir = async (id) => { if(confirm("Excluir Lead?")) await deleteDoc(doc(db, "clientes", id)); };
     document.getElementById('btnSair').onclick = () => signOut(auth);
 </script>
 </body>

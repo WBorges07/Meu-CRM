@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Cliente - CRM Elite</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-dark: #020617;
-            --card-dark: #0f172a;
-            --accent-blue: #38bdf8;
-            --border-color: #1e293b;
-            --text-main: #f1f5f9;
+            --bg-dark: #020617; --card-dark: #0f172a; --accent-blue: #38bdf8;
+            --border-color: #1e293b; --text-main: #f1f5f9; --whatsapp-green: #22c55e;
         }
 
         body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; padding: 40px 20px; }
@@ -23,48 +21,73 @@
             padding: 35px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.4);
             margin-bottom: 30px;
+            width: 100%;
         }
 
         .info-label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 5px; letter-spacing: 1px; }
         .info-value { font-size: 1.2rem; font-weight: 600; color: #fff; margin-bottom: 25px; display: block; }
         
+        /* Estilização do Campo de Texto Ampliado */
         .form-control { 
             background: #020617 !important; 
             border: 1px solid var(--border-color) !important; 
             color: white !important; 
             border-radius: 12px;
-            padding: 12px;
+            padding: 15px;
+            width: 100%; /* Garante largura total */
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .form-control:focus {
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25 margin-bottom: 10px;rgba(56, 189, 248, 0.1);
         }
 
-        .btn-modern-back {
+        .nav-buttons { display: flex; gap: 10px; }
+        
+        .btn-nav {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            color: #fff; padding: 10px 25px;
+            color: #fff; padding: 10px 20px;
             border-radius: 12px; font-weight: 700; text-decoration: none;
-            transition: 0.3s;
+            transition: 0.3s; font-size: 0.85rem;
         }
-        .btn-modern-back:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+        .btn-nav:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(56, 189, 248, 0.05); }
+
+        .btn-whatsapp-ficha {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--whatsapp-green); color: white !important;
+            padding: 8px 15px; border-radius: 10px; text-decoration: none;
+            font-weight: 700; margin-bottom: 20px; transition: 0.3s;
+        }
+        .btn-whatsapp-ficha:hover { opacity: 0.9; transform: translateY(-2px); }
 
         .btn-save-note {
             background: var(--accent-blue);
             color: #020617; border: none; font-weight: 800;
-            border-radius: 12px; padding: 12px; width: 100%;
-            text-transform: uppercase; margin-top: 10px;
+            border-radius: 12px; padding: 15px; width: 100%;
+            text-transform: uppercase; margin-top: 15px; transition: 0.3s;
+            cursor: pointer;
         }
+        .btn-save-note:hover { opacity: 0.9; transform: scale(1.01); }
 
         .nota-item {
             background: rgba(255,255,255,0.02);
             padding: 20px; border-left: 4px solid var(--accent-blue);
             border-radius: 0 12px 12px 0; margin-bottom: 15px;
+            word-wrap: break-word; /* Evita que textos longos quebrem o layout */
         }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 900px;">
+<div class="container" style="max-width: 1000px;">
     <div class="d-flex justify-content-between align-items-center mb-5">
         <h2 class="fw-bold">Ficha <span style="color: var(--accent-blue)">Individual</span></h2>
-        <a href="index.html" class="btn-modern-back">← Voltar</a>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn-nav"><i class="fas fa-chart-line me-2"></i>Dashboard</a>
+            <a href="esteira.html" class="btn-nav"><i class="fas fa-arrow-left me-2"></i>Voltar para Esteira</a>
+        </div>
     </div>
 
     <div class="glass-panel">
@@ -73,30 +96,38 @@
                 <span class="info-label">Cliente</span>
                 <span id="det-nome" class="info-value">Carregando...</span>
                 
-                <span class="info-label">Contrato</span>
-                <span id="det-contrato" class="info-value text-info">---</span>
+                <span class="info-label">Bem de interesse</span>
+                <span id="det-bem" class="info-value text-info">---</span>
 
-                <span class="info-label">Valor da Causa</span>
+                <span class="info-label">Valor Desejado</span>
                 <span id="det-valor" class="info-value text-success">R$ 0,00</span>
+                
+                <span class="info-label">Vendedor Responsável</span>
+                <span id="det-vendedor" class="info-value">---</span>
             </div>
             
             <div class="col-md-6 ps-md-5">
-                <div class="mb-4">
-                    <span class="info-label">📅 DEFINIR PRAZO / AUDIÊNCIA</span>
-                    <input type="date" id="inputPrazo" class="form-control mt-2" onchange="window.atualizarPrazo(this.value)">
-                    <p class="text-secondary small mt-2">Ao selecionar uma data, o cliente aparecerá automaticamente na sua Agenda.</p>
-                </div>
-                
-                <span class="info-label">Contato</span>
+                <span class="info-label">Contato Direto</span>
+                <div id="container-whatsapp"></div>
                 <span id="det-contato" class="info-value">---</span>
+                
+                <hr class="border-secondary opacity-25 my-4">
+
+                <div class="mb-2">
+                    <span class="info-label">📅 Próximo Passo / Reunião</span>
+                    <input type="date" id="inputPrazo" class="form-control mt-2">
+                </div>
             </div>
         </div>
     </div>
 
     <div class="glass-panel">
-        <h5 class="fw-bold mb-4 text-info">📝 Histórico e Observações</h5>
-        <textarea id="novaObs" class="form-control mb-3" rows="3" placeholder="Digite uma nova atualização do processo..."></textarea>
-        <button id="btnSalvarObs" class="btn-save-note">Adicionar Nota ao Histórico</button>
+        <h5 class="fw-bold mb-4 text-info"><i class="fas fa-pen-fancy me-2"></i>Histórico e Observações Detalhadas</h5>
+        
+        <div class="w-100">
+            <textarea id="novaObs" class="form-control" rows="6" placeholder="Escreva aqui detalhes sobre a última conversa, objeções ou próximos passos do lead..."></textarea>
+            <button id="btnSalvarObs" class="btn-save-note">Salvar Atualização no Histórico</button>
+        </div>
         
         <div id="listaObs" class="mt-5">
             </div>
@@ -107,62 +138,59 @@
     import { db } from './firebase.js';
     import { doc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Pega o ID do cliente pela URL
     const params = new URLSearchParams(window.location.search);
     const idCliente = params.get('id');
-
-    if (!idCliente) {
-        window.location.href = "index.html";
-    }
-
     const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
-    // Escuta os dados do cliente em tempo real
-    onSnapshot(doc(db, "clientes", idCliente), (snap) => {
-        if (!snap.exists()) return;
-        const c = snap.data();
+    if (!idCliente) { window.location.href = "esteira.html"; }
 
-        document.getElementById('det-nome').innerText = c.nome;
-        document.getElementById('det-contrato').innerText = c.numContrato || '---';
-        document.getElementById('det-valor').innerText = formatarMoeda(c.valorCausa);
-        document.getElementById('det-contato').innerText = c.contato || '---';
-        document.getElementById('inputPrazo').value = c.proximoPrazo || '';
+    onSnapshot(doc(db, "clientes", idCliente), (docSnap) => {
+        if (docSnap.exists()) {
+            const c = docSnap.data();
+            const foneLimpo = c.telefone ? c.telefone.replace(/\D/g, '') : '';
+            
+            document.getElementById('det-nome').innerText = c.nome;
+            document.getElementById('det-bem').innerText = c.bemDesejado || '---';
+            document.getElementById('det-valor').innerText = formatarMoeda(c.valorDoBem || c.valorCausa);
+            document.getElementById('det-contato').innerText = c.telefone || '---';
+            document.getElementById('det-vendedor').innerText = c.vendedor || 'Não informado';
+            document.getElementById('inputPrazo').value = c.proximoPrazo || "";
 
-        // Renderiza Histórico
-        const lista = document.getElementById('listaObs');
-        lista.innerHTML = (c.observacoes || []).reverse().map(o => `
-            <div class="nota-item">
-                <div class="d-flex justify-content-between mb-2">
-                    <small class="text-info fw-bold">${o.dataHora}</small>
+            document.getElementById('container-whatsapp').innerHTML = `
+                <a href="https://wa.me/55${foneLimpo}" target="_blank" class="btn-whatsapp-ficha">
+                    <i class="fab fa-whatsapp"></i> Iniciar Conversa
+                </a>
+            `;
+            
+            const lista = document.getElementById('listaObs');
+            const historico = c.historico || [];
+            lista.innerHTML = historico.slice().reverse().map(h => `
+                <div class="nota-item">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-info fw-bold">${h.data}</small>
+                        <i class="fas fa-check-circle text-secondary small"></i>
+                    </div>
+                    <p class="mb-0 mt-2 text-white-50" style="white-space: pre-wrap;">${h.texto}</p>
                 </div>
-                <div class="text-white">${o.texto}</div>
-            </div>
-        `).join('');
+            `).join('');
+        }
     });
 
-    // Função para salvar a data do prazo (Alimenta a Agenda)
-    window.atualizarPrazo = async (data) => {
-        try {
-            await updateDoc(doc(db, "clientes", idCliente), { proximoPrazo: data });
-        } catch (e) {
-            console.error("Erro ao atualizar data:", e);
-        }
+    document.getElementById('inputPrazo').onchange = async (e) => {
+        await updateDoc(doc(db, "clientes", idCliente), { proximoPrazo: e.target.value });
     };
 
-    // Função para salvar observações
     document.getElementById('btnSalvarObs').onclick = async () => {
         const campo = document.getElementById('novaObs');
-        if (!campo.value.trim()) return;
-
-        const novaNota = {
-            texto: campo.value,
-            dataHora: new Date().toLocaleString('pt-BR')
-        };
+        const txt = campo.value;
+        if(!txt.trim()) return;
 
         await updateDoc(doc(db, "clientes", idCliente), {
-            observacoes: arrayUnion(novaNota)
+            historico: arrayUnion({ 
+                data: new Date().toLocaleString('pt-BR'), 
+                texto: txt 
+            })
         });
-
         campo.value = "";
     };
 </script>
