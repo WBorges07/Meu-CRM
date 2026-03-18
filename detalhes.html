@@ -27,20 +27,22 @@
         .info-label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 5px; letter-spacing: 1px; }
         .info-value { font-size: 1.2rem; font-weight: 600; color: #fff; margin-bottom: 25px; display: block; }
         
-        /* Estilização do Campo de Texto Ampliado */
         .form-control { 
             background: #020617 !important; 
             border: 1px solid var(--border-color) !important; 
             color: white !important; 
             border-radius: 12px;
             padding: 15px;
-            width: 100%; /* Garante largura total */
+            width: 100%;
             font-size: 0.95rem;
             line-height: 1.6;
         }
+
+        /* CORREÇÃO DO ERRO DA LINHA 43 */
         .form-control:focus {
             border-color: var(--accent-blue) !important;
-            box-shadow: 0 0 0 0.25 margin-bottom: 10px;rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.1);
+            outline: none;
         }
 
         .nav-buttons { display: flex; gap: 10px; }
@@ -75,7 +77,7 @@
             background: rgba(255,255,255,0.02);
             padding: 20px; border-left: 4px solid var(--accent-blue);
             border-radius: 0 12px 12px 0; margin-bottom: 15px;
-            word-wrap: break-word; /* Evita que textos longos quebrem o layout */
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -125,7 +127,7 @@
         <h5 class="fw-bold mb-4 text-info"><i class="fas fa-pen-fancy me-2"></i>Histórico e Observações Detalhadas</h5>
         
         <div class="w-100">
-            <textarea id="novaObs" class="form-control" rows="6" placeholder="Escreva aqui detalhes sobre a última conversa, objeções ou próximos passos do lead..."></textarea>
+            <textarea id="novaObs" class="form-control" rows="6" placeholder="Escreva aqui detalhes sobre a última conversa..."></textarea>
             <button id="btnSalvarObs" class="btn-save-note">Salvar Atualização no Histórico</button>
         </div>
         
