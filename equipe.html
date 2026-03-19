@@ -231,7 +231,7 @@
                 stats.vendas++;
                 stats.valorVendido += parseFloat(c.valorDoBem || 0);
             }
-            if(c.situacao === "Declinado") stats.declin++;
+            if(c.situacao === "Perdido") stats.declin++;
 
             listaClientesHTML.innerHTML += `
                 <tr>

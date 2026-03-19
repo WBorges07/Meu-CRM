@@ -72,7 +72,9 @@
 
         .table-container { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; }
         .table { width: 100%; color: var(--text-main); font-size: 0.85rem; }
-        .select-status { appearance: none; background: #020617; border: 1px solid var(--border-color); border-radius: 50px; padding: 5px 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; color: var(--accent-blue); }
+        .table th { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8; padding: 15px 10px; }
+        .select-status, .select-vendedor-table { appearance: none; background: #020617; border: 1px solid var(--border-color); border-radius: 50px; padding: 5px 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; color: var(--accent-blue); text-align: center; }
+        .select-vendedor-table { color: #f1f5f9; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -91,10 +93,9 @@
         <div class="stat-card"><span class="stat-value" id="countNegociacao">0</span><span class="stat-label">Negociação</span></div>
         <div class="stat-card"><span class="stat-value" id="countReuniaoAgendada">0</span><span class="stat-label">Reunião</span></div>
         <div class="stat-card"><span class="stat-value" id="countClienteFuturo" style="color: #fbbf24;">0</span><span class="stat-label">Cli. Futuro</span></div>
-        <div class="stat-card"><span class="stat-value" id="countDocs">0</span><span class="stat-label">Doc.</span></div>
         <div class="stat-card"><span class="stat-value" id="countPagamento">0</span><span class="stat-label">Pagamento</span></div>
         <div class="stat-card"><span class="stat-value text-success" id="countVenda">0</span><span class="stat-label">Venda</span></div>
-        <div class="stat-card"><span class="stat-value text-danger" id="countDeclinado">0</span><span class="stat-label">Declinado</span></div>
+        <div class="stat-card"><span class="stat-value text-danger" id="countPerdido">0</span><span class="stat-label">Perdido</span></div>
         <div class="stat-card"><span class="stat-value" id="countRepescagem" style="color: #a855f7;">0</span><span class="stat-label">Repescagem</span></div>
     </div>
 
@@ -107,7 +108,7 @@
         <a href="agenda.html" class="btn-modern-action">📅 Agenda</a>
         <button id="btnFiltroReuniao" class="btn-modern-action">📅 Ver Reuniões de Hoje</button>
         <button id="btnExportar" class="btn-modern-action">📤 Exportar Relatório</button>
-        <a href="esteira.html" class="btn-modern-action">📊 Ver Esteira de Vendas</a>
+        <a href="esteira.html" class="btn-modern-action">📊 Esteira de Vendas</a>
         <a href="equipe.html" class="btn-modern-action" style="border-color: var(--accent-glow)">👥 Gestão de Equipe</a>
     </div>
 
@@ -140,8 +141,15 @@
     <div class="table-container">
         <table class="table table-dark table-hover mb-0">
             <thead>
-                <tr>
-                    <th class="ps-4">Data</th><th>Nome</th><th>Telefone</th><th>Vendedor</th><th>Bem</th><th>Valor</th><th>Status Funil</th><th class="text-center">Ação</th>
+                <tr class="text-center">
+                    <th>Data</th>
+                    <th>Nome do Lead</th>
+                    <th>Contato</th>
+                    <th>Responsável</th>
+                    <th>Categoria</th>
+                    <th>Valor Estimado</th>
+                    <th>Status do Funil</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody id="listaClientes"></tbody>
@@ -165,23 +173,32 @@
     const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
     let filtroReuniaoAtivo = false;
+    let vendedoresCadastrados = [];
 
+    // Listener para os Vendedores
     onSnapshot(collection(db, "vendedores"), (snapshot) => {
         const select = document.getElementById('vendedor');
         const valorAtual = select.value;
+        vendedoresCadastrados = [];
+        
         select.innerHTML = '<option value="">Selecione...</option>';
         snapshot.forEach(doc => {
             const v = doc.data();
-            if(v.ativo !== false) select.innerHTML += `<option value="${v.nome}">${v.nome}</option>`;
+            if(v.ativo !== false) {
+                vendedoresCadastrados.push(v.nome);
+                select.innerHTML += `<option value="${v.nome}">${v.nome}</option>`;
+            }
         });
         select.value = valorAtual;
+        // Re-renderiza a tabela para garantir que os selects de responsável tenham os dados novos
+        renderizar();
     });
 
     document.getElementById('btnSalvar').onclick = async () => {
         const nome = document.getElementById('nome').value;
         const tel = maskTelefone.unmaskedValue;
         const vend = document.getElementById('vendedor').value;
-        if(!nome || tel.length < 11 || !vend) return alert("Preencha Nome, Telefone e Vendedor");
+        if(!nome || tel.length < 10 || !vend) return alert("Preencha Nome, Telefone e Vendedor");
 
         await addDoc(collection(db, "clientes"), {
             data: new Date().toLocaleDateString('pt-BR'),
@@ -220,11 +237,10 @@
         
         lista.innerHTML = ""; listaAlertas.innerHTML = "";
         
-        // Contadores atualizados
         let contadores = { 
             "Lead novo": 0, "Primeiro contato": 0, "Em negociação": 0, 
-            "Reunião agendada": 0, "Cliente Futuro": 0, "Aguardando documentação": 0, 
-            "Aguardando pagamento": 0, "Venda": 0, "Declinado": 0, "Repescagem": 0 
+            "Reunião agendada": 0, "Cliente Futuro": 0, 
+            "Aguardando pagamento": 0, "Venda": 0, "Perdido": 0, "Repescagem": 0 
         };
 
         const hoje = new Date().toISOString().split('T')[0];
@@ -238,7 +254,7 @@
 
             if(isPrazoHoje) {
                 alertasCount++;
-                const prefixo = isReuniaoHoje ? "📅 REUNIÃO AGENDADA: " : "";
+                const prefixo = isReuniaoHoje ? "📅 REUNIÃO: " : "";
                 listaAlertas.innerHTML += `<div class="alert-item" style="${isReuniaoHoje ? 'border-left-color: var(--accent-blue); background: #0c4a6e;' : ''}"><span><strong>${prefixo}${c.nome}</strong> - Follow-up hoje!</span><a href="detalhes.html?id=${c.id}" class="btn btn-sm btn-light fw-bold">Ver</a></div>`;
             }
 
@@ -250,29 +266,38 @@
             }
 
             if (mostrar) {
+                // Gera as opções do select de vendedores dinamicamente
+                const optionsVendedores = vendedoresCadastrados.map(v => 
+                    `<option value="${v}" ${c.vendedor === v ? 'selected' : ''}>${v}</option>`
+                ).join('');
+
                 lista.innerHTML += `
-                    <tr class="${isReuniaoHoje ? 'reuniao-hoje' : ''}">
-                        <td class="ps-4 small text-secondary">${c.data}</td>
+                    <tr class="text-center ${isReuniaoHoje ? 'reuniao-hoje' : ''}">
+                        <td class="small text-secondary">${c.data}</td>
                         <td class="fw-bold">${c.nome} ${isReuniaoHoje ? '📅' : ''}</td>
                         <td class="text-info fw-bold">${c.telefone}</td>
-                        <td class="small">${c.vendedor || 'Não inf.'}</td>
+                        <td>
+                            <select class="select-vendedor-table" onchange="window.atualizarDado('${c.id}', 'vendedor', this.value)">
+                                <option value="">Não inf.</option>
+                                ${optionsVendedores}
+                            </select>
+                        </td>
                         <td><span class="badge bg-secondary" style="font-size: 0.65rem;">${c.bemDesejado}</span></td>
                         <td class="fw-bold">${formatarMoeda(c.valorDoBem)}</td>
                         <td>
                             <select class="select-status" onchange="window.atualizarDado('${c.id}', 'situacao', this.value)">
+                                <option value="Repescagem" ${c.situacao === 'Repescagem' ? 'selected' : ''}>Repescagem</option>
                                 <option value="Lead novo" ${c.situacao === 'Lead novo' ? 'selected' : ''}>Lead novo</option>
                                 <option value="Primeiro contato" ${c.situacao === 'Primeiro contato' ? 'selected' : ''}>1º Contato</option>
                                 <option value="Em negociação" ${c.situacao === 'Em negociação' ? 'selected' : ''}>Negociação</option>
                                 <option value="Reunião agendada" ${c.situacao === 'Reunião agendada' ? 'selected' : ''}>Reunião agendada</option>
                                 <option value="Cliente Futuro" ${c.situacao === 'Cliente Futuro' ? 'selected' : ''}>Cliente Futuro</option>
-                                <option value="Aguardando documentação" ${c.situacao === 'Aguardando documentação' ? 'selected' : ''}>Documentação</option>
                                 <option value="Aguardando pagamento" ${c.situacao === 'Aguardando pagamento' ? 'selected' : ''}>Pagamento</option>
                                 <option value="Venda" ${c.situacao === 'Venda' ? 'selected' : ''}>Venda</option>
-                                <option value="Declinado" ${c.situacao === 'Declinado' ? 'selected' : ''}>Declinado</option>
-                                <option value="Repescagem" ${c.situacao === 'Repescagem' ? 'selected' : ''}>Repescagem</option>
+                                <option value="Perdido" ${c.situacao === 'Perdido' ? 'selected' : ''}>Perdido</option>
                             </select>
                         </td>
-                        <td class="text-center">
+                        <td>
                             <a href="detalhes.html?id=${c.id}" class="btn btn-sm text-info me-2">👁️</a>
                             <button onclick="window.excluir('${c.id}')" class="btn btn-sm text-danger">✕</button>
                         </td>
@@ -280,21 +305,23 @@
             }
         });
 
-        // Mapeamento dos IDs do Dashboard atualizado
         const idMap = { 
+            "Repescagem": "countRepescagem",
             "Lead novo": "countLeadNovo", 
             "Primeiro contato": "countPrimeiroContato", 
             "Em negociação": "countNegociacao", 
             "Reunião agendada": "countReuniaoAgendada", 
             "Cliente Futuro": "countClienteFuturo",
-            "Aguardando documentação": "countDocs", 
             "Aguardando pagamento": "countPagamento", 
             "Venda": "countVenda", 
-            "Declinado": "countDeclinado",
-            "Repescagem": "countRepescagem"
+            "Perdido": "countPerdido"
         };
         
-        Object.keys(contadores).forEach(key => { if(document.getElementById(idMap[key])) document.getElementById(idMap[key]).innerText = contadores[key]; });
+        Object.keys(idMap).forEach(key => { 
+            const el = document.getElementById(idMap[key]);
+            if(el) el.innerText = contadores[key] || 0; 
+        });
+
         painelAlertas.style.display = alertasCount > 0 ? "block" : "none";
     }
 

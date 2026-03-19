@@ -70,11 +70,10 @@
 
         const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
-        // Lista de Status Atualizada
+        // Lista de Status Atualizada (Removido Aguardando documentação)
         const statusList = [
-            "Lead novo", "Primeiro contato", "Em negociação", "Reunião agendada", 
-            "Cliente Futuro", "Aguardando documentação", "Aguardando pagamento", 
-            "Venda", "Declinado", "Repescagem"
+            "Repescagem", "Lead novo", "Primeiro contato", "Em negociação", "Reunião agendada", 
+            "Cliente Futuro", "Aguardando pagamento", "Venda", "Perdido"
         ];
 
         function initDragAndDrop() {

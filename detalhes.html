@@ -38,11 +38,19 @@
             line-height: 1.6;
         }
 
-        /* CORREÇÃO DO ERRO DA LINHA 43 */
         .form-control:focus {
             border-color: var(--accent-blue) !important;
             box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.1);
             outline: none;
+        }
+
+        /* Estilo específico para o input de valor monetário */
+        .input-money {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #22c55e !important;
+            border-style: dashed !important;
+            margin-bottom: 25px;
         }
 
         .nav-buttons { display: flex; gap: 10px; }
@@ -102,7 +110,7 @@
                 <span id="det-bem" class="info-value text-info">---</span>
 
                 <span class="info-label">Valor Desejado</span>
-                <span id="det-valor" class="info-value text-success">R$ 0,00</span>
+                <input type="text" id="inputValor" class="form-control input-money" placeholder="R$ 0,00">
                 
                 <span class="info-label">Vendedor Responsável</span>
                 <span id="det-vendedor" class="info-value">---</span>
@@ -115,9 +123,14 @@
                 
                 <hr class="border-secondary opacity-25 my-4">
 
-                <div class="mb-2">
+                <div class="mb-4">
                     <span class="info-label">📅 Próximo Passo / Reunião</span>
                     <input type="date" id="inputPrazo" class="form-control mt-2">
+                </div>
+
+                <div class="mb-2">
+                    <span class="info-label">⏰ Horário</span>
+                    <input type="time" id="inputHora" class="form-control mt-2">
                 </div>
             </div>
         </div>
@@ -132,7 +145,7 @@
         </div>
         
         <div id="listaObs" class="mt-5">
-            </div>
+        </div>
     </div>
 </div>
 
@@ -142,7 +155,18 @@
 
     const params = new URLSearchParams(window.location.search);
     const idCliente = params.get('id');
-    const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+    // Funções de formatação monetária
+    const formatarMoeda = (v) => {
+        const value = String(v).replace(/\D/g, "");
+        const options = { minimumFractionDigits: 2 };
+        const result = new Intl.NumberFormat('pt-BR', options).format(parseFloat(value) / 100);
+        return "R$ " + (result === "NaN" ? "0,00" : result);
+    };
+
+    const moedaParaNumero = (v) => {
+        return parseFloat(String(v).replace(/\D/g, "")) / 100 || 0;
+    };
 
     if (!idCliente) { window.location.href = "esteira.html"; }
 
@@ -153,10 +177,18 @@
             
             document.getElementById('det-nome').innerText = c.nome;
             document.getElementById('det-bem').innerText = c.bemDesejado || '---';
-            document.getElementById('det-valor').innerText = formatarMoeda(c.valorDoBem || c.valorCausa);
+            
+            // Valor Monetário - Preenche apenas se o usuário não estiver digitando
+            const inputValor = document.getElementById('inputValor');
+            if (document.activeElement !== inputValor) {
+                const valorNumerico = c.valorDoBem || c.valorCausa || 0;
+                inputValor.value = formatarMoeda(valorNumerico * 100);
+            }
+
             document.getElementById('det-contato').innerText = c.telefone || '---';
             document.getElementById('det-vendedor').innerText = c.vendedor || 'Não informado';
             document.getElementById('inputPrazo').value = c.proximoPrazo || "";
+            document.getElementById('inputHora').value = c.hora || "";
 
             document.getElementById('container-whatsapp').innerHTML = `
                 <a href="https://wa.me/55${foneLimpo}" target="_blank" class="btn-whatsapp-ficha">
@@ -178,8 +210,25 @@
         }
     });
 
+    // Máscara em tempo real para o campo Valor
+    document.getElementById('inputValor').addEventListener('input', (e) => {
+        e.target.value = formatarMoeda(e.target.value);
+    });
+
+    // Salva o valor no Firebase ao sair do campo (onchange/blur)
+    document.getElementById('inputValor').addEventListener('change', async (e) => {
+        const valorNumerico = moedaParaNumero(e.target.value);
+        await updateDoc(doc(db, "clientes", idCliente), { 
+            valorDoBem: valorNumerico 
+        });
+    });
+
     document.getElementById('inputPrazo').onchange = async (e) => {
         await updateDoc(doc(db, "clientes", idCliente), { proximoPrazo: e.target.value });
+    };
+
+    document.getElementById('inputHora').onchange = async (e) => {
+        await updateDoc(doc(db, "clientes", idCliente), { hora: e.target.value });
     };
 
     document.getElementById('btnSalvarObs').onclick = async () => {
