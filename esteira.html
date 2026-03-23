@@ -24,7 +24,8 @@
         }
         .column-header { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: center; }
         .column-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent-blue); margin: 0; }
-        .column-count { font-size: 0.65rem; color: #64748b; font-weight: 600; }
+        .column-count { font-size: 0.65rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
+        .column-total { font-size: 0.8rem; font-weight: 700; color: #94a3b8; display: block; margin-top: 5px; }
         .kanban-items { padding: 10px; overflow-y: auto; flex-grow: 1; min-height: 150px; }
         .kanban-card {
             background: var(--card-dark); border: 1px solid var(--border-color);
@@ -70,7 +71,7 @@
 
         const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
-        // Lista de Status Atualizada (Removido Aguardando documentação)
+        // Lista de Status Atualizada
         const statusList = [
             "Repescagem", "Lead novo", "Primeiro contato", "Em negociação", "Reunião agendada", 
             "Cliente Futuro", "Aguardando pagamento", "Venda", "Perdido"
@@ -102,6 +103,12 @@
                 const idFormatado = status.replace(/ /g, "-");
                 const clientesNoStatus = dados.filter(c => c.situacao === status);
                 
+                // Calcula o valor total acumulado na coluna
+                const valorTotalStatus = clientesNoStatus.reduce((acc, c) => {
+                    const valorValido = parseFloat(c.valorDoBem || c.valorCausa || 0);
+                    return acc + valorValido;
+                }, 0);
+
                 const coluna = document.createElement('div');
                 coluna.className = `kanban-column`;
                 coluna.setAttribute('data-status', status);
@@ -110,6 +117,7 @@
                     <div class="column-header">
                         <p class="column-title">${status}</p>
                         <span class="column-count">${clientesNoStatus.length} Leads</span>
+                        <span class="column-total">${formatarMoeda(valorTotalStatus)}</span>
                     </div>
                     <div class="kanban-items" id="items-${idFormatado}">
                         ${clientesNoStatus.map(c => {
