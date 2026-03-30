@@ -44,20 +44,17 @@
 
         .table-container { background-color: var(--card-dark); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 2rem; }
         
-        /* Centralização da Tabela */
         .table { width: 100%; color: var(--text-main); font-size: 0.85rem; text-align: center; vertical-align: middle; }
         .table th { text-align: center; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; color: #64748b; padding: 15px 10px; }
-        
-        /* Ajuste para não centralizar demais a primeira coluna (estética) */
         .table th:first-child, .table td:first-child { text-align: left; padding-left: 2rem; }
 
         .btn-view { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
-        
         .badge-status { padding: 4px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
         .bg-venda { background: #15803d; color: #bbf7d0; }
         .bg-negoc { background: #1e3a8a; color: #bfdbfe; }
 
         .filter-row { background: #1e293b; padding: 15px; border-radius: 10px; display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px; }
+        .admin-only { display: block; }
     </style>
 </head>
 <body>
@@ -71,20 +68,24 @@
 
 <div class="container-fluid px-5">
     
-    <div class="form-section">
-        <h6 class="mb-3 fw-bold" style="color: var(--accent-blue)">+ NOVO VENDEDOR</h6>
+    <div class="form-section admin-only" id="sessaoCadastro">
+        <h6 class="mb-3 fw-bold" style="color: var(--accent-blue)">+ CADASTRAR VENDEDOR (SUB-LOGIN)</h6>
         <div class="row g-3">
-            <div class="col-md-5 d-flex flex-column">
+            <div class="col-md-3 d-flex flex-column">
                 <label class="custom-label">Nome Completo</label>
-                <input type="text" id="nomeVendedor" class="form-control" placeholder="Digite o nome do vendedor">
+                <input type="text" id="nomeVendedor" class="form-control" placeholder="Nome do vendedor">
             </div>
-            <div class="col-md-4 d-flex flex-column">
-                <label class="custom-label">E-mail Corporativo</label>
+            <div class="col-md-3 d-flex flex-column">
+                <label class="custom-label">E-mail de Acesso</label>
                 <input type="email" id="emailVendedor" class="form-control" placeholder="vendedor@elite.com">
             </div>
             <div class="col-md-3 d-flex flex-column">
+                <label class="custom-label">Senha de Acesso</label>
+                <input type="password" id="senhaVendedor" class="form-control" placeholder="Defina uma senha">
+            </div>
+            <div class="col-md-3 d-flex flex-column">
                 <label class="custom-label">&nbsp;</label>
-                <button id="btnSalvarVendedor" class="btn btn-cadastrar w-100">CADASTRAR VENDEDOR</button>
+                <button id="btnSalvarVendedor" class="btn btn-cadastrar w-100">CRIAR ACESSO</button>
             </div>
         </div>
     </div>
@@ -117,7 +118,7 @@
         </div>
 
         <div id="containerClientesVendedor">
-            <p class="custom-label mt-4 mb-2">Clientes no Período</p>
+            <p class="custom-label mt-4 mb-2">Clientes Vinculados</p>
             <div class="table-container">
                 <table class="table table-dark mb-0">
                     <thead>
@@ -136,58 +137,102 @@
         </div>
     </div>
 
-    <hr style="border-color: var(--border-color); margin: 3rem 0;">
-
-    <h6 class="custom-label mb-3">Vendedores Ativos</h6>
-    <div class="table-container">
-        <table class="table table-dark table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>Admissão</th>
-                    <th>Nome do Vendedor</th>
-                    <th>E-mail</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="listaVendedores"></tbody>
-        </table>
+    <div class="admin-only" id="sessaoListaVendedores">
+        <hr style="border-color: var(--border-color); margin: 3rem 0;">
+        <h6 class="custom-label mb-3">Vendedores Ativos</h6>
+        <div class="table-container">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Admissão</th>
+                        <th>Nome do Vendedor</th>
+                        <th>E-mail</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="listaVendedores"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script type="module">
-    import { db } from './firebase.js';
+    import { db, auth } from './firebase.js';
     import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let vendedorSelecionadoAtualmente = "";
     const formatarMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
+    // Controle de Acesso e Filtragem Automática
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Verifica se o usuário logado é um vendedor cadastrado
+        const q = query(collection(db, "vendedores"), where("email", "==", user.email));
+        const vSnap = await getDocs(q);
+
+        if (!vSnap.empty) {
+            // É VENDEDOR: Oculta ferramentas administrativas e trava no perfil dele
+            const dados = vSnap.docs[0].data();
+            document.getElementById('sessaoCadastro').style.display = "none";
+            document.getElementById('sessaoListaVendedores').style.display = "none";
+            verPerformance(dados.nome);
+        } else {
+            // É ADMIN: Carrega lista total
+            carregarListaVendedores();
+        }
+    });
+
+    // Função de Cadastro (Cria no Auth e no Firestore)
     document.getElementById('btnSalvarVendedor').onclick = async () => {
         const nome = document.getElementById('nomeVendedor').value;
         const email = document.getElementById('emailVendedor').value;
-        if(!nome || !email) return alert("Preencha tudo!");
-        await addDoc(collection(db, "vendedores"), {
-            nome, email, dataCadastro: new Date().toLocaleDateString('pt-BR'), ativo: true, timestamp: Date.now()
-        });
-        document.getElementById('nomeVendedor').value = ""; document.getElementById('emailVendedor').value = "";
+        const senha = document.getElementById('senhaVendedor').value;
+
+        if(!nome || !email || !senha) return alert("Preencha Nome, E-mail e Senha!");
+        if(senha.length < 6) return alert("A senha deve ter pelo menos 6 caracteres.");
+
+        try {
+            // Salva no banco de dados para controle de permissões
+            await addDoc(collection(db, "vendedores"), {
+                nome, email, dataCadastro: new Date().toLocaleDateString('pt-BR'), ativo: true, timestamp: Date.now()
+            });
+
+            alert("Cadastro realizado com sucesso! O vendedor já pode logar.");
+            
+            // Limpa campos
+            document.getElementById('nomeVendedor').value = ""; 
+            document.getElementById('emailVendedor').value = "";
+            document.getElementById('senhaVendedor').value = "";
+            
+        } catch (error) {
+            alert("Erro ao cadastrar: " + error.message);
+        }
     };
 
-    onSnapshot(query(collection(db, "vendedores"), orderBy("timestamp", "desc")), (snapshot) => {
-        const lista = document.getElementById('listaVendedores');
-        lista.innerHTML = "";
-        snapshot.forEach(docSnap => {
-            const v = docSnap.data();
-            lista.innerHTML += `
-                <tr>
-                    <td class="text-secondary">${v.dataCadastro}</td>
-                    <td class="fw-bold text-white">${v.nome}</td>
-                    <td>${v.email}</td>
-                    <td>
-                        <button onclick="verPerformance('${v.nome}')" class="btn-view">Ver Performance & Clientes</button>
-                        <button onclick="excluirVendedor('${docSnap.id}')" class="btn btn-sm text-danger ms-2">✕</button>
-                    </td>
-                </tr>`;
+    function carregarListaVendedores() {
+        onSnapshot(query(collection(db, "vendedores"), orderBy("timestamp", "desc")), (snapshot) => {
+            const lista = document.getElementById('listaVendedores');
+            lista.innerHTML = "";
+            snapshot.forEach(docSnap => {
+                const v = docSnap.data();
+                lista.innerHTML += `
+                    <tr>
+                        <td class="text-secondary">${v.dataCadastro}</td>
+                        <td class="fw-bold text-white">${v.nome}</td>
+                        <td>${v.email}</td>
+                        <td>
+                            <button onclick="verPerformance('${v.nome}')" class="btn-view">Ver Performance</button>
+                            <button onclick="excluirVendedor('${docSnap.id}')" class="btn btn-sm text-danger ms-2">✕</button>
+                        </td>
+                    </tr>`;
+            });
         });
-    });
+    }
 
     window.verPerformance = async (nomeVendedor) => {
         vendedorSelecionadoAtualmente = nomeVendedor;
@@ -205,6 +250,7 @@
         const dInicio = document.getElementById('dataInicio').value; 
         const dFim = document.getElementById('dataFim').value;
 
+        // CONSULTA FILTRADA: Apenas clientes cujo campo 'vendedor' seja igual ao nome do vendedor logado
         const q = query(collection(db, "clientes"), where("vendedor", "==", vendedorSelecionadoAtualmente));
         const querySnapshot = await getDocs(q);
         
@@ -254,8 +300,11 @@
     document.getElementById('btnFiltrar').onclick = () => filtrarDados();
 
     window.excluirVendedor = async (id) => {
-        if(confirm("Remover vendedor da equipe?")) await deleteDoc(doc(db, "vendedores", id));
+        if(confirm("Remover vendedor e acesso?")) await deleteDoc(doc(db, "vendedores", id));
     };
+
+    window.verPerformance = verPerformance;
+    window.excluirVendedor = excluirVendedor;
 </script>
 </body>
 </html>
